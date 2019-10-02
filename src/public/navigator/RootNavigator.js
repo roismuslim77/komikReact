@@ -7,6 +7,11 @@ import { Icon } from 'native-base'
 
 import HomeScreen from '../../Home/screen'
 import ExploreScreen from '../../Explore/screen'
+import SavedScreen from '../../Saved/screen'
+import AccountScreen from '../../Account/screen'
+import DetailScreen from '../../Detail/screen/detail_manga'
+import ChapterScreen from '../../Detail/screen/chapter_manga'
+import GenreScreen from '../../Genres/screen'
 
 const BottomNav = createMaterialBottomTabNavigator({
     Home: { 
@@ -26,7 +31,7 @@ const BottomNav = createMaterialBottomTabNavigator({
         })
     },
     Saved: { 
-        screen: ExploreScreen,
+        screen: SavedScreen,
         navigationOptions: ()=>({
             tabBarIcon: ({ tintColor, focused }) => (
                 <Icon name='book' type='MaterialIcons' style={[styles.IconBar,{color: tintColor}]} />
@@ -34,7 +39,7 @@ const BottomNav = createMaterialBottomTabNavigator({
         })
     },
     Account: { 
-        screen: ExploreScreen,
+        screen: AccountScreen,
         navigationOptions: ()=>({
             tabBarIcon: ({ tintColor, focused }) => (
                 <Icon name='person' type='Ionicons' style={[styles.IconBar,{color: tintColor}]} />
@@ -43,16 +48,26 @@ const BottomNav = createMaterialBottomTabNavigator({
     }
 },{
     activeTintColor: '#4AAFF7',
-    inactiveTintColor: '#474747',
+    inactiveTintColor: '#DDDDDD',
     shifting: true,
     labeled: 'bold',
     barStyle: {
-        backgroundColor: 'white',
-    }
+        backgroundColor: '#181818',
+    },
+    initialRouteName: 'Saved'
 })
 
 const RootNav = createStackNavigator({
     HomeRoot: BottomNav,
+    DetailScreen: {
+        screen: DetailScreen
+    },
+    ChapterScreen: {
+        screen: ChapterScreen
+    },
+    GenreScreen: {
+        screen: GenreScreen
+    }
 },{
     initialRouteName: 'HomeRoot',
     headerMode: 'none'
