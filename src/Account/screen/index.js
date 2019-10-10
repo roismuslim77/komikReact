@@ -1,9 +1,17 @@
 import React from 'react'
-import { View } from 'react-native'
+
+import Account from './accountScreen'
+import Login from './login'
 
 class Index extends React.Component{
+    constructor(props){
+        super(props)
+        this.state={
+            login_acces: false,
+        }
+    }
     render(){
-        return(<View></View>)
+        return this.state.login_acces == true ? <Account/> : <Login/> 
     }
 }
 

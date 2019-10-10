@@ -54,7 +54,7 @@ const BottomNav = createMaterialBottomTabNavigator({
     barStyle: {
         backgroundColor: '#181818',
     },
-    initialRouteName: 'Saved'
+    initialRouteName: 'Account'
 })
 
 const RootNav = createStackNavigator({

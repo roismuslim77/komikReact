@@ -6,8 +6,11 @@ import { connect } from 'react-redux'
 
 import { getGenreFul, getGenrePending, getGenreRejected } from '../../public/actions/genre'
 import { getMangaGenreFul, getMangaGenrePending, getMangaGenreRejected } from '../../public/actions/mangaGenre'
-import { lovedFul } from '../../public/actions/loved'
+import { lovedPending, lovedFul, lovedRejected } from '../../public/actions/loved'
 import Shimmer from '../../public/shimmer/shimmer'
+import Saved from '../../Saved/screen'
+
+const base_uri ='http://apimanga.idmustopha.com/public'
 
 class Index extends React.Component{
     constructor(props){
@@ -26,9 +29,33 @@ class Index extends React.Component{
         this.getMangaByGenre(null)
     }
 
+    getListSaved = ()=>{
+        this.props.dispatch(lovedPending())
+        axios.get(base_uri+'/manga/loved/1')
+        .then((res)=>{
+            var id=[]
+            if(res.data.result.length == 0){
+                this.props.dispatch(lovedFul(id))
+            }else{
+                res.data.result.rows.map((data,key)=>{
+                    id.push(data.manga_id)
+                })
+                axios.post(base_uri+'/manga/list',{
+                    'id': id
+                }).then((res)=>{
+                    this.props.dispatch(lovedFul(res.data.result.rows))
+                }).catch((err)=>{
+                    alert(err)
+                })
+            }
+        }).catch((err)=>{
+            alert(err)
+        })
+    }
+
     getGenre = () =>{
         this.props.dispatch(getGenrePending())
-        axios.get('http://192.168.88.229:7000/manga/genre')
+        axios.get(base_uri+'/manga/genre')
         .then((res)=>{
             this.props.dispatch(getGenreFul(res.data.result.rows))
         }).catch((err)=>{
@@ -51,7 +78,7 @@ class Index extends React.Component{
         this.setState({loading: true})
         if(data==null){
             this.props.dispatch(getMangaGenrePending())
-            axios.post('http://192.168.88.229:7000/manga/list?genre='+this.state.genre_selected+'&page='+this.state.current_page_genre+'&limit=8')
+            axios.post(base_uri+'/manga/list?genre='+this.state.genre_selected+'&page='+this.state.current_page_genre+'&limit=8')
             .then((res)=>{
                 this.setState({
                     hasMoreGenre: (this.state.current_page_genre <= res.data.last_page),
@@ -73,7 +100,7 @@ class Index extends React.Component{
                 lastPageGenre: -1,
             })
             this.props.dispatch(getMangaGenrePending())
-            axios.post('http://192.168.88.229:7000/manga/list?genre='+this.state.genre_selected+'&page='+this.state.current_page_genre+'&limit=8')
+            axios.post(base_uri+'/manga/list?genre='+this.state.genre_selected+'&page='+this.state.current_page_genre+'&limit=8')
             .then((res)=>{
                 this.setState({
                     hasMoreGenre: (this.state.current_page_genre <= res.data.last_page),
@@ -91,12 +118,34 @@ class Index extends React.Component{
     }
 
     sendMangaLoved = (manga_id, user_id)=>{
-        axios.get('http://192.168.88.229:7000/manga/'+manga_id+'/love/'+user_id)
-        .then((res)=>{
-            alert('liked')
-        }).catch((err)=>{
-            alert(err)
-        })
+        let data_s = this.props.getLoved.manga.find(o=> o.id == manga_id)
+        if(data_s != undefined){
+            axios.get(base_uri+'/manga/'+manga_id+'/unlove/'+user_id)
+            .then((res)=>{
+                this.getListSaved()
+            }).catch((err)=>{
+                alert(err)
+            })
+        }else{
+            axios.get(base_uri+'/manga/'+manga_id+'/love/'+user_id)
+            .then((res)=>{
+                this.getListSaved()
+            }).catch((err)=>{
+                alert(err)
+            })
+        }
+    }
+
+    getIconLoved =(id)=>{
+        let data_id = this.props.getLoved.manga.find(o=> o.id == id)
+        if(data_id != undefined){
+            return(
+                <Icon name='heart' style={{color: '#4AAFF7', fontSize: 22}}/>
+            )
+        }
+        return(
+            <Icon name='heart' style={{color: '#ffffff', fontSize: 22}}/>
+        )
     }
 
     renderListGenre=()=>{
@@ -139,7 +188,8 @@ class Index extends React.Component{
                             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
                                 <Text numberOfLines={1} style={{flex: 7,color:'#E0E0E0', marginTop: 5, fontSize: 16, lineHeight: 19,fontWeight: 'bold'}} ellipsizeMode='tail'>{data.title}</Text>
                                 <TouchableHighlight style={{flex: 1, justifyContent: 'flex-end', alignItems: 'center', width: '100%', height: '100%'}} onPress={()=> {this.sendMangaLoved(data.id, 1)}}>
-                                    <Icon name='heart' style={{color: '#ffffff', fontSize: 22}}/>
+                                    {/* <Icon name='heart' style={{color: '#ffffff', fontSize: 22}}/> */}
+                                    <View>{this.getIconLoved(data.id)}</View>
                                 </TouchableHighlight>
                             </View>
                             <View style={{flex: 1}}>

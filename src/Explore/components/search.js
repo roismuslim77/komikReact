@@ -7,10 +7,10 @@ import axios from 'axios'
 import { getMangaSearchFul, getMangaSearchPending, getMangaSearchRejected } from '../../public/actions/mangaSearch'
 import Shimmer from '../../public/shimmer/shimmer'
 
+const base_api = 'http://apimanga.idmustopha.com/public'
 class Index extends React.Component{
     constructor(props){
         super(props)
-
         this.state={
             hasMoreExp: true,
             loading: false,
@@ -29,7 +29,7 @@ class Index extends React.Component{
         this.props.dispatch(getMangaSearchPending())
         // alert(this.props.query)
         //axios.get('https://api.jikan.moe/v3/search/anime/?q='+this.props.query+'&order_by=title&genre=&page='+this.state.current_page_exp)
-        axios.post('http://192.168.88.229:7000/manga/list?limit=10')
+        axios.post(base_api+'/manga/list?limit=10')
         .then((res)=>{
             // alert(JSON.stringify(res.data))
             this.setState({
@@ -51,13 +51,13 @@ class Index extends React.Component{
         if(this.props.getMangaSearch.isLoading){
             for (let i = 0; i < 4; i++) {
                 element.push(
-                    <View style={{flexDirection: 'row',width: '100%', marginTop: 9, marginRight: 9, marginBottom: 20}}>
-                        <View style={{flex: 1}}>
-                            <Shimmer style={{width: 99, height: 139}}/>
+                    <View style={styles.contain}>
+                        <View style={styles.image_contain}>
+                            <Shimmer style={styles.image}/>
                         </View>
-                        <View style={{flex: 2.4 ,width: '100%', marginRight: 22.27,}}>
-                            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
-                                <Shimmer numberOfLines={1} style={{flex: 7,color:'#E0E0E0', marginTop: 5, fontSize: 16, lineHeight: 19,fontWeight: 'bold'}} ellipsizeMode='tail'></Shimmer>
+                        <View style={styles.detail_container}>
+                            <View style={styles.detail_title_contain}>
+                                <Shimmer numberOfLines={1} style={styles.detail_title} ellipsizeMode='tail'></Shimmer>
                             </View>
                             <View style={{flex: 1}}>
                                 <Shimmer numberOfLines={2} style={{color:'#E0E0E0', marginTop: 5, fontSize: 12, lineHeight: 14}}></Shimmer>
@@ -119,8 +119,8 @@ class Index extends React.Component{
     render(){
         return(
             <View>
-                <Text style={{color: '#DDDDDD', fontFamily: 'Roboto', fontSize: 14, fontWeight: 'bold', marginLeft: 18}}>Result - {this.props.getMangaSearch.manga.length}</Text>
-                <ScrollView style={{marginLeft: 18, marginTop: 10}}>
+                <Text style={styles.container_text}>Result - {this.props.getMangaSearch.manga.length}</Text>
+                <ScrollView style={styles.container_scrollview}>
                     {this.cardSearch()}
                 </ScrollView>
             </View>
@@ -131,5 +131,52 @@ class Index extends React.Component{
 const mapStateToProps=(state)=>{
     return state
 }
+
+const styles = StyleSheet.create({
+    container_text:{
+        color: '#DDDDDD',
+        fontFamily: 'Roboto',
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginLeft: 18
+    },
+    container_scrollview:{
+        marginLeft: 18,
+        marginTop: 10
+    },
+    contain:{
+        flexDirection: 'row',
+        width: '100%',
+        marginTop: 9,
+        marginRight: 9,
+        marginBottom: 20
+    },
+    image_contain:{
+        flex: 1
+    },
+    image:{
+        width: 99,
+        height: 139
+    },
+    detail_container:{
+        flex: 2.4,
+        width: '100%',
+        marginRight: 22.27
+    },
+    detail_title_contain:{
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+    },
+    detail_title:{
+        flex: 7,
+        color: '#E0E0E0',
+        marginTop: 5,
+        fontSize: 16,
+        lineHeight: 19,
+        fontWeight: 'bold'
+    }
+})
 
 export default connect(mapStateToProps)(Index)

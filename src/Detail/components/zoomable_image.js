@@ -181,7 +181,7 @@ this.setState({
   }
 
   componentWillMount() {
-this._panResponder = PanResponder.create({
+  this._panResponder = PanResponder.create({
   onStartShouldSetPanResponder: () => true,
   onStartShouldSetPanResponderCapture: () => true,
   onMoveShouldSetPanResponder: () => true,

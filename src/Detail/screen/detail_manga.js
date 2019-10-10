@@ -1,8 +1,52 @@
 import React from 'react'
-import {View, Text, ImageBackground, Image, ScrollView, TouchableOpacity} from 'react-native'
+import {View, Text, ImageBackground, Image, ScrollView, TouchableOpacity, StyleSheet} from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
+import {connect} from 'react-redux'
+import axios from 'axios'
 
+import {mangaDetailFul, mangaDetailPending, mangaDetailRejected} from '../../public/actions/mangaDetail'
+
+const base_uri = 'http://apimanga.idmustopha.com/public'
 class Index extends React.Component{
+    constructor(props){
+        super(props)
+        this.state={
+            'genre':[],
+            'title':'',
+            'sinopsis':'',
+            'image':null,
+            'chapter':[],
+            'last_chapter':'',
+            'rating':'',
+            'status':'',
+            'komikus':''
+        }
+    }
+
+    componentDidMount(){
+        this.getMangaContent()
+    }
+
+    getMangaContent = ()=>{
+        this.props.dispatch(mangaDetailPending())
+        axios.post(base_uri+'/manga/'+this.props.navigation.getParam('id'))
+        .then((res)=>{
+            this.setState({
+                genre: res.data.genre,
+                title: res.data.title,
+                sinopsis: res.data.sinopsis,
+                image: res.data.image,
+                chapter: res.data.chapter_detail,
+                last_chapter: res.data.chapter,
+                rating: res.data.rating,
+                status: res.data.status,
+                komikus: res.data.komikus
+            })
+        }).catch((err)=>{
+            alert(err)
+        })
+    }
+
     getRandomColor = () => {
         var letters = '0123456789ABCDEF';
         var color = '#';
@@ -15,90 +59,89 @@ class Index extends React.Component{
     }
 
     getChapterItem = ()=>{
-        var element=[]
-        for (let i = 0; i < 20; i++) {
-            element.push(
-                <View style={{flexDirection: 'row', justifyContent: 'space-between', marginRight: 39, marginLeft: 23, marginBottom: 22}}>
-                    <TouchableOpacity onPress={()=>{this.props.navigation.navigate('ChapterScreen',{ id: i})}} style={{width: '100%'}}>
+        var elements=[]
+        this.state.chapter.map((data, key)=> {
+            elements.push(
+                <View style={styles.chapter_contain}>
+                    <TouchableOpacity onPress={()=>{this.props.navigation.navigate('ChapterScreen',{ chapter: data.chapter, id: this.props.navigation.getParam('id')})}} style={{width: '100%'}}>
                         <View>
-                            <Text style={{color: '#4AAFF7', fontSize: 14, lineHeight: 16, fontWeight: 'bold'}}>Chapter {i+1}</Text>
-                            <Text style={{color: '#DDDDDD', fontSize: 16, lineHeight: 19}}>Who am i ?</Text>
+                            <Text style={styles.chapter_text}>Chapter {data.chapter}</Text>
+                            <Text style={styles.chapter_title}>this is title</Text>
                         </View>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={()=>{this.props.navigation.navigate('ChapterScreen',{ id: 1})}}>
-                        <Icon style={{fontSize: 20, color: 'black'}} name='angle-right'/>
+                        <Icon style={styles.chapter_icon} name='angle-right'/>
                     </TouchableOpacity>
                 </View>
             )
-        }
-        return(element)
+        })
+        return(elements)
     }
 
     getCategoryItem = ()=>{
         var element=[]
-        for (let i = 0; i < 6; i++) {
+        this.state.genre.map((res, key)=>{
             element.push(
-                <TouchableOpacity style={[this.getRandomColor(),{borderRadius: 30, width: 82, height: 34, justifyContent: 'center', alignItems: 'center', marginRight: 5}]}>
-                    <Text style={{color: 'white', fontSize: 14, fontWeight: 'bold'}}>Action</Text>
+                <TouchableOpacity style={[this.getRandomColor(),styles.category_contain]}>
+                     <Text style={styles.category_text}>{res.title}</Text>
                 </TouchableOpacity>
             )
-        }
-        return(element)
+        })
+        return element
     }
 
     render(){
         return(
-            <View style={{flex: 1,backgroundColor: '#181818'}}>
-                <ImageBackground resizeMode='cover' style={{width: '100%', flex:1.4}} source={{uri: 'https://i0.wp.com/komiku.co/wp-content/uploads/20190403-komiku-267.jpg?quality=65'}}>
-                    <View style={{backgroundColor: 'rgba(0, 0, 0, 0.8)', flexDirection: 'row', justifyContent: 'space-between', flex: 1, paddingLeft: 22, paddingTop: 27, paddingRight: 25}}> 
-                        <Icon onPress={()=>{this.props.navigation.pop()}} style={{color: '#DDDDDD', fontSize: 25}} name="arrow-left"/>
-                        <Icon style={{color: '#DDDDDD', fontSize: 25}} name="heart"/>
+            <View style={styles.container}>
+                <ImageBackground resizeMode='cover' style={styles.image_background} source={{uri: this.state.image}}>
+                    <View style={styles.navbar}> 
+                        <Icon onPress={()=>{this.props.navigation.pop()}} style={styles.navbar_icon} name="arrow-left"/>
+                        <Icon style={styles.navbar_icon} name="heart"/>
                     </View>
-                    <View style={{backgroundColor: 'rgba(0, 0, 0, 0.8)', flex: 3, flexDirection:'row', paddingRight: 14, paddingLeft: 22}}>
-                        <View style={{flex: 1}}>
-                            <Image style={{width: 119, height: 167, borderRadius: 10}} source={{uri: 'https://i0.wp.com/komiku.co/wp-content/uploads/20190403-komiku-267.jpg?quality=65'}}/>
+                    <View style={styles.contain}>
+                        <View style={styles.image_contain}>
+                            <Image style={styles.image} source={{uri: this.state.image}}/>
                         </View>
-                        <View style={{flex:2, marginLeft: 7, marginTop: 2}}>
-                            <Text style={{color: '#E0E0E0', fontSize: 16, lineHeight: 19, fontWeight: 'bold'}}>Isekai Maou to Shoukan Shoujo no Dorei Majutsu</Text>
-                            <Text style={{color: '#E0E0E0', fontSize: 12, lineHeight: 14, marginTop: 4}}>Tsurusaki, Takahiro (Art), Murasaki, Yukiya (Story)</Text>
-                            <View style={{flexDirection: 'row',justifyContent: 'flex-start', paddingTop: 9}}>
-                                <View style={{flexDirection: 'row', marginRight: 14}}>
-                                    <Icon name='eye' style={{color: '#4AAFF7', fontSize: 18, marginRight: 3}}/>
-                                    <Text style={{color: '#4AAFF7', fontSize: 12, fontWeight: 'bold', lineHeight: 14, marginTop: 2}}>12K</Text>
+                        <View style={styles.content}>
+                            <Text style={styles.content_title}>{this.state.title}</Text>
+                            <Text style={styles.content_subtitle}>{this.state.komikus}</Text>
+                            <View style={styles.contain_icons}>
+                                <View style={styles.contain_icons_content}>
+                                    <Icon name='eye' style={styles.content_icon}/>
+                                    <Text style={styles.content_text}>12K</Text>
                                 </View>
-                                <View style={{flexDirection: 'row', marginRight: 14}}>
-                                    <Icon name='heart' style={{color: '#4AAFF7', fontSize: 18, marginRight: 3}}/>
-                                    <Text style={{color: '#4AAFF7', fontSize: 12, fontWeight: 'bold', lineHeight: 14, marginTop: 2}}>1.3K</Text>
+                                <View style={styles.contain_icons_content}>
+                                    <Icon name='heart' style={styles.content_icon}/>
+                                    <Text style={styles.content_text}>1.3K</Text>
                                 </View>
-                                <View style={{flexDirection: 'row', marginRight: 14}}>
-                                    <Icon name='star' style={{color: '#4AAFF7', fontSize: 18, marginRight: 3}}/>
-                                    <Text style={{color: '#4AAFF7', fontSize: 12, fontWeight: 'bold', lineHeight: 14, marginTop: 2}}>8.8</Text>
+                                <View style={styles.contain_icons_content}>
+                                    <Icon name='star' style={styles.content_icon}/>
+                                    <Text style={styles.content_text}>{this.state.rating}</Text>
                                 </View>
                             </View>
-                            <View><Text style={{color:'#E0E0E0', fontSize: 12, lineHeight: 14, fontWeight: 'bold', marginTop: 13}}>300 Comments</Text></View>
+                            <View><Text style={styles.content_text_white}>300 Comments</Text></View>
                         </View>
                     </View>
-                    <View style={{backgroundColor: 'rgba(0, 0, 0, 0.8)', flex: 3.1, paddingRight: 12, paddingLeft: 22, paddingTop: 10}}>
-                        <Text style={{color: '#E0E0E0', fontSize: 14, lineHeight: 16, fontWeight: 'bold', marginBottom: 14}}>Sinopsis</Text>
-                        <Text numberOfLines={5} style={{textAlign: 'justify',color: '#E0E0E0', fontSize: 14, lineHeight: 16}}>In regards to the MMORPG Cross Reverie, Sakamoto Takuma boasted an overwhelming strength that was enough for him to be 
-                        called the Demon King by the other players. One day, he gets summoned to another world with his appearance in the game. There, there are two people all rightIn regards to the MMORPG Cross Reverie, Sakamoto Takuma boasted an overwhelming strength that was enough for him to be called the Demon King by the other players. One day, he gets summoned to another world with his appearance in the game. There, there are two people ...</Text>
-                        <View style={{marginTop: 13}}>
+                    <View style={styles.content_detail}>
+                        <Text style={styles.sinopsis_title}>Sinopsis</Text>
+                        <Text numberOfLines={5} style={styles.sinopsis}>{this.state.sinopsis}</Text>
+                        <View style={styles.category_container}>
                             <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>{this.getCategoryItem()}</ScrollView>
                         </View>
                     </View>
                 </ImageBackground>
                 <View style={{flex: 1}}>
-                    <View style={{backgroundColor: '#C4C4C4', height: 2, marginRight: 11, marginLeft: 12, opacity: 0.5, paddingTop: 3}}></View>
-                    <View style={{marginTop: 16, marginLeft: 23, marginBottom: 15, flexDirection: 'row', justifyContent: 'space-between', marginRight: 28}}>
-                        <Text style={{color: '#E0E0E0', fontSize: 16, lineHeight: 19, fontWeight: 'bold'}}>Chapter {this.props.navigation.getParam('id')}</Text>
-                        <View style={{flexDirection: 'row', alignContent: 'center'}}>
-                            <Text style={{color: '#E0E0E0', fontSize: 16, fontWeight: 'bold', marginRight: 6}}>sort</Text>
-                            <Icon style={{color: '#E0E0E0', fontSize: 18}} name='sort'/>
+                    <View style={styles.chapter_line_top}></View>
+                        <View style={styles.chapter_header_container}>
+                            <Text style={styles.chapter_header_left}>Chapter {this.state.last_chapter}</Text>
+                            <View style={styles.chapter_header_right}>
+                                <Text style={styles.chapter_header_right_text}>sort</Text>
+                                <Icon style={styles.chapter_header_right_icon} name='sort'/>
+                            </View>
                         </View>
-                    </View>
-                    <View style={{backgroundColor: '#C4C4C4', height: 2, marginRight: 11, marginLeft: 12, opacity: 0.5}}></View>
-                    <View>
-                        <ScrollView style={{paddingTop: 16}}>
+                    <View style={styles.chapter_line_bottom}></View>
+                    <View style={styles.chapter_container}>
+                        <ScrollView style={styles.chapter_scrollview}>
                             {this.getChapterItem()}
                         </ScrollView>
                     </View>
@@ -108,4 +151,198 @@ class Index extends React.Component{
     }
 }
 
-export default Index
+const mapStateToProps = (state)=>{
+    return state
+}
+
+const styles = StyleSheet.create({
+    chapter_container:{
+        flex:1
+    },
+    chapter_contain:{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginRight: 39,
+        marginLeft: 23,
+        marginBottom: 22
+    },
+    chapter_text:{
+        color: '#4AAFF7',
+        fontSize: 14, 
+        lineHeight: 16,
+        fontWeight: 'bold'
+    },
+    chapter_title:{
+        color: '#DDDDDD',
+        fontSize: 16,
+        lineHeight: 19
+    },
+    chapter_icon:{
+        fontSize: 20,
+        color: 'black'
+    },
+    chapter_scrollview:{
+        paddingTop: 16
+    },
+    category_container:{
+        marginTop: 13
+    },
+    category_contain:{
+        borderRadius: 30,
+        width: 82,
+        height: 34,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 5
+    },
+    category_text:{
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: 'bold'
+    },
+    container:{
+        flex: 1,
+        backgroundColor: '#181818'
+    },
+    image_background:{
+        width: '100%',
+        flex: 1.4
+    },
+    navbar:{
+        backgroundColor: 'rgba(0,0,0, 0.8)',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        flex: 1,
+        paddingLeft: 22,
+        paddingTop: 27,
+        paddingRight: 25 
+    },
+    navbar_icon:{
+        color: '#DDDDDD', fontSize: 25
+    },
+    contain:{
+        backgroundColor: 'rgba(0,0,0, 0.8)',
+        flex: 3, 
+        flexDirection: 'row',             
+        paddingRight: 14,
+        paddingLeft: 22
+    },
+    image_contain:{
+        flex: 1
+    },
+    image:{
+        width: 119,
+        height: 167,
+        borderRadius: 10
+    },
+    content:{
+        flex: 2,
+        marginLeft: 7,
+        marginTop: 2
+    },
+    content_title:{
+        color: '#E0E0E0',
+        fontSize: 16,
+        lineHeight: 19, 
+        fontWeight: 'bold'
+    },
+    content_subtitle:{
+        color: '#E0E0E0',
+        fontSize: 12,
+        lineHeight: 14,
+        marginTop: 4
+    },
+    contain_icons:{
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        paddingTop: 9
+    },
+    contain_icons_content:{
+        flexDirection: 'row',
+        marginRight: 14
+    },
+    content_icon:{
+        color: '#4AAFF7',
+        fontSize: 18,
+        marginRight: 3
+    },
+    content_text:{
+        color: '#4AAFF7', 
+        fontSize: 12,
+        fontWeight: 'bold',
+        lineHeight: 14,
+        marginTop: 2
+    },
+    content_text_white:{
+        color: '#E0E0E0',
+        fontSize: 12,
+        lineHeight: 14,
+        fontWeight: 'bold',
+        marginTop: 13
+    },
+    content_detail:{
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        flex: 3.1,
+        paddingRight: 12,
+        paddingLeft: 22,
+        paddingTop:10,
+    },
+    sinopsis_title:{
+        color: '#E0E0E0',
+        fontSize: 14,
+        lineHeight: 16,
+        fontWeight: 'bold',
+        marginBottom: 14
+    },
+    sinopsis:{
+        textAlign: 'justify',
+        color: '#E0E0E0',
+        fontSize: 14,
+        lineHeight: 16
+    },
+    chapter_line_top:{
+        backgroundColor: '#C4C4C4',
+        height: 2,
+        marginRight: 11, 
+        marginLeft: 12,
+        opacity: 0.5,
+        paddingTop: 3
+    },
+    chapter_line_bottom:{
+        backgroundColor: '#C4C4C4',
+        height: 2,
+        marginRight: 11, 
+        marginLeft: 12,
+        opacity: 0.5,
+    },
+    chapter_header_container:{
+        marginTop: 16,
+        marginLeft: 23,
+        marginBottom: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginRight: 28
+    },
+    chapter_header_left:{
+        color: '#E0E0E0',
+        fontSize: 16,
+        lineHeight: 19,
+        fontWeight: 'bold'
+    },
+    chapter_header_right:{
+        flexDirection: 'row',
+        alignContent: 'center'
+    },
+    chapter_header_right_text:{
+        color: '#E0E0E0',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginRight: 6,
+    },
+    chapter_header_right_icon:{
+        color: '#E0E0E0',
+        fontSize: 18
+    }
+})
+
+export default connect(mapStateToProps)(Index)

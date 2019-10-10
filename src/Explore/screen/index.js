@@ -8,6 +8,7 @@ import CardSearch from '../components/search'
 import { getMangaExpFul, getMangaExpPending, getMangaExpRejected } from '../../public/actions/mangaExplore'
 import Shimmer from '../../public/shimmer/shimmer'
 
+const base_api = 'https://apimanga.idmustopha.com/public';
 class Index extends React.Component{
     constructor(props){
         super(props)
@@ -18,13 +19,14 @@ class Index extends React.Component{
             current_page_exp: 1,
             lastPageExp: -1,
             category:['Action','Adventure', 'Comedy','Drama'],
-            category_selected: 1,
+            category_selected: "",
             searchText: '',
             searchEnable: false,
         }
     }
 
     componentDidMount(){
+        this.getListGenre()
         this.getListExplore(null)
     }
 
@@ -44,21 +46,30 @@ class Index extends React.Component{
         }
     }
 
+    getListGenre = async()=>{
+        await axios.get(base_api+'/manga/genre')
+        .then((res)=>{
+            this.setState({category: res.data.result.rows})
+        }).catch((err)=>{
+            alert(err)
+        })
+    }
+
     getListExplore= async(data)=>{
         if(this.state.loading){return;}
         this.setState({loading: true})
         if(data===null){
             this.props.dispatch(getMangaExpPending())
-            axios.get('https://api.jikan.moe/v3/search/anime/?q=&order_by=title&genre='+this.state.category_selected+'&page='+this.state.current_page_exp+'&limit=9')
+            axios.post(base_api+'/manga/list?sortby=title&genre='+this.state.category_selected+'&page='+this.state.current_page_exp+'&limit=9')
             .then((res)=>{
                 this.setState({
-                    hasMoreExp: (this.state.current_page_exp <= res.data.last_page),
-                    lastPageExp: res.data.last_page,
+                    hasMoreExp: (this.state.current_page_exp <= res.data.result.last_page),
+                    lastPageExp: res.data.result.last_page,
                     loading: false,
                     current_page_exp: this.state.current_page_exp + 1
                 })
                 // alert(this.state.category_selected+JSON.stringify(res.data.results))
-                this.props.dispatch(getMangaExpFul(res.data.results, data))
+                this.props.dispatch(getMangaExpFul(res.data.result.rows, data))
             }).catch((err)=>{
                 this.props.dispatch(getMangaExpRejected())
                 alert('failed load data')
@@ -71,16 +82,16 @@ class Index extends React.Component{
                 lastPageExp: -1,
             })
             this.props.dispatch(getMangaExpPending())
-            axios.get('https://api.jikan.moe/v3/search/anime/?q=&order_by=title&genre='+this.state.category_selected+'&page='+this.state.current_page_exp+'&limit=9')
+            axios.post(base_api+'/manga/list?sortby=title&genre='+this.state.category_selected+'&page='+this.state.current_page_exp+'&limit=9')
             .then((res)=>{
                 this.setState({
-                    hasMoreExp: (this.state.current_page_exp <= res.data.last_page),
-                    lastPageExp: res.data.last_page,
+                    hasMoreExp: (this.state.current_page_exp <= res.data.result.last_page),
+                    lastPageExp: res.data.result.last_page,
                     loading: false,
                     current_page_exp: this.state.current_page_exp + 1
                 })
                 // alert(this.state.category_selected+JSON.stringify(res.data.results))
-                this.props.dispatch(getMangaExpFul(res.data.results, data))
+                this.props.dispatch(getMangaExpFul(res.data.result.rows, data))
             }).catch((err)=>{
                 this.props.dispatch(getMangaExpRejected())
                 alert('failed load data')
@@ -116,12 +127,12 @@ class Index extends React.Component{
         }else{
             return (this.props.getMangaExplore.manga.map((data, key)=>{
                 return(
-                    <TouchableOpacity onPress={()=>{this.props.navigation.navigate('DetailScreen',{ id: data.mal_id})}} style={styles.contentExplore}>
-                        <Image style={{width: 119, height: 167, borderRadius: 10}} source={{uri: data.image_url}}/>
+                    <TouchableOpacity onPress={()=>{this.props.navigation.navigate('DetailScreen',{ id: data.id})}} style={styles.contentExplore}>
+                        <Image style={{width: 119, height: 167, borderRadius: 10}} source={{uri: data.image}}/>
                         <View style={{height: 35, marginBottom: 4}}>
                             <Text numberOfLines={2} style={{color:'white', marginTop: 9, fontSize: 15, lineHeight: 18}}>{data.title}</Text>
                         </View>
-                        <Text numberOfLines={1} style={{color:'#4AAFF7', marginTop: 6, fontSize: 14, lineHeight: 16, fontWeight: 'bold'}}>Chapter {data.chapters}</Text>
+                        <Text numberOfLines={1} style={{color:'#4AAFF7', marginTop: 6, fontSize: 14, lineHeight: 16, fontWeight: 'bold'}}>Chapter {data.chapter}</Text>
                     </TouchableOpacity>
                 )
             }))
@@ -143,13 +154,15 @@ class Index extends React.Component{
                     <Text onPress={()=>{this.props.navigation.navigate('GenreScreen')}} style={{color: '#DDDDDD', fontSize: 15, lineHeight: 18}}>Selengkapnya</Text>
                 </View>
                 <View style={{flexDirection: 'row', justifyContent: 'space-between', marginLeft: 18, marginTop: 10, marginBottom: 20, marginRight: 22}}>
-                    {this.state.category.map((data, key)=>{
-                        return(
-                            <TouchableHighlight onPress={()=>{this.getListByGenre(key+1)}} style={[this.getRandomColor(key+1),{borderRadius: 30, width: 82, height: 34, justifyContent: 'center', alignItems: 'center'}]}>
-                                <Text style={{color: 'white', fontSize: 14, fontWeight: 'bold'}}>{data}</Text>
-                            </TouchableHighlight>
-                        )   
-                    })}
+                    <ScrollView horizontal={true}>
+                        {this.state.category.map((data, key)=>{
+                            return(
+                                <TouchableHighlight onPress={()=>{this.getListByGenre(data.title)}} style={[this.getRandomColor(key+1),{borderRadius: 30, width: 82, height: 34, justifyContent: 'center', alignItems: 'center', marginRight: 5}]}>
+                                    <Text style={{color: 'white', fontSize: 14, fontWeight: 'bold'}}>{data.title}</Text>
+                                </TouchableHighlight>
+                            )   
+                        })}
+                    </ScrollView>
                 </View>
                 <View style={{flexDirection: 'row', justifyContent: 'space-between', marginRight: 22, marginLeft: 18, marginBottom: 10}}>
                     <Text style={{color: '#DDDDDD', fontSize: 18, lineHeight: 21, fontWeight: 'bold'}}>Manga List</Text>

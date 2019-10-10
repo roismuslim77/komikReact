@@ -8,6 +8,8 @@ import getMangaSearch from './mangaSearch'
 import getGenre from './genre'
 import getMangaGenre from './mangaGenre'
 import getLoved from './lovedList'
+import getMangaDetail from './mangaDetail'
+import getMangaChapter from './mangaChapter'
 
 const indexReducer = combineReducers({
     getAnime,
@@ -17,7 +19,9 @@ const indexReducer = combineReducers({
     getMangaTop,
     getMangaExplore,
     getMangaSearch,
-    getMangaGenre
+    getMangaGenre,
+    getMangaDetail,
+    getMangaChapter
 })
 
 export default indexReducer
