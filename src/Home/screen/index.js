@@ -208,7 +208,7 @@ class Index extends React.Component{
 }
 
 const mapStateToProps=(state)=>{
-    return state
+    return state.reducer
 }
 
 export default connect(mapStateToProps)(Index)

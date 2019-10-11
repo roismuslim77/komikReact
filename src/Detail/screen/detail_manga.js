@@ -152,7 +152,7 @@ class Index extends React.Component{
 }
 
 const mapStateToProps = (state)=>{
-    return state
+    return state.reducer
 }
 
 const styles = StyleSheet.create({

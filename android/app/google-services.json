@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "256446919823",
+    "firebase_url": "https://auth-6caa9.firebaseio.com",
+    "project_id": "auth-6caa9",
+    "storage_bucket": "auth-6caa9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256446919823:android:8c624783ffcad4219becfa",
+        "android_client_info": {
+          "package_name": "com.komikapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "256446919823-aac9aeu9aqqfn3nh17o3qbd8vrtrpm5m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.komikapp",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "256446919823-1qq76ou6e1if87isuae379uaj1t6q680.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNG30h5apZgULbUUZQ0W-Pw8MB13oLVtQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "256446919823-1qq76ou6e1if87isuae379uaj1t6q680.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

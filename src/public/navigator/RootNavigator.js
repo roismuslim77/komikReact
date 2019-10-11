@@ -8,7 +8,7 @@ import { Icon } from 'native-base'
 import HomeScreen from '../../Home/screen'
 import ExploreScreen from '../../Explore/screen'
 import SavedScreen from '../../Saved/screen'
-import AccountScreen from '../../Account/screen'
+import AccountScreen from '../../Account/screen/login'
 import DetailScreen from '../../Detail/screen/detail_manga'
 import ChapterScreen from '../../Detail/screen/chapter_manga'
 import GenreScreen from '../../Genres/screen'
@@ -54,7 +54,7 @@ const BottomNav = createMaterialBottomTabNavigator({
     barStyle: {
         backgroundColor: '#181818',
     },
-    initialRouteName: 'Account'
+    initialRouteName: 'Saved'
 })
 
 const RootNav = createStackNavigator({

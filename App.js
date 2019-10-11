@@ -8,16 +8,19 @@
 
 import React, {Fragment} from 'react'
 import { Provider } from 'react-redux'
+import {PersistGate} from 'redux-persist/integration/react'
 
 import HomeScreen from './src/Home/screen'
 import RootNavigator from './src/public/navigator/RootNavigator'
-import store from './src/public/store'
+import {persistor, store} from './src/public/store'
 
 export default class App extends React.Component{
   render(){
     return(
       <Provider store={store}>
-        <RootNavigator/>
+        <PersistGate loading={null} persistor={persistor}>
+          <RootNavigator/>
+        </PersistGate>
       </Provider>
     )
   }

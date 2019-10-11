@@ -10,8 +10,10 @@ import getMangaGenre from './mangaGenre'
 import getLoved from './lovedList'
 import getMangaDetail from './mangaDetail'
 import getMangaChapter from './mangaChapter'
+import getUser from './auth'
 
 const indexReducer = combineReducers({
+    getUser,
     getAnime,
     getGenre,
     getLoved,
