@@ -25,6 +25,11 @@ const manga = (state= initialState, action) =>{
                 ...state,
                 isError: true, isLoading: false
             }
+        case "LOVED_CLEAR":
+            return {
+                ...state,
+                manga: []
+            }
         default:
         return state
     }

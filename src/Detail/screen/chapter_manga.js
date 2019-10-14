@@ -43,9 +43,9 @@ class Index extends React.Component{
 
     renderListChapter =()=>{
         // alert(JSON.stringify(this.props.getMangaChapter.manga))
-        return this.props.getMangaChapter.manga.map((data)=>{
+        return this.props.getMangaChapter.manga.map((data, key)=>{
             return(
-                <View>
+                <View key={key}>
                     <ReactNativeZoomableView
                     maxZoom={2}
                     minZoom={1}

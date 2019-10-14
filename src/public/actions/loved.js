@@ -10,3 +10,7 @@ export const lovedPending = () => ({
 export const lovedRejected = () => ({
     type: "LOVED_REJECTED",
 })
+
+export const lovedClear = () => ({
+    type: "LOVED_CLEAR"
+})

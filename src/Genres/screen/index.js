@@ -16,6 +16,7 @@ class Index extends React.Component{
     constructor(props){
         super(props)
         this.state={
+            id: 0,
             hasMoreGenre: true,
             loading: false,
             current_page_genre: 1,
@@ -27,11 +28,16 @@ class Index extends React.Component{
     componentDidMount(){
         this.getGenre()
         this.getMangaByGenre(null)
+        if(this.props.getUser.user) {
+            this.setState({
+                id: parseFloat(this.props.getUser.user.id)
+            })
+        }
     }
 
     getListSaved = ()=>{
         this.props.dispatch(lovedPending())
-        axios.get(base_uri+'/manga/loved/1')
+        axios.get(base_uri+'/manga/loved/'+this.state.id)
         .then((res)=>{
             var id=[]
             if(res.data.result.length == 0){
@@ -119,20 +125,24 @@ class Index extends React.Component{
 
     sendMangaLoved = (manga_id, user_id)=>{
         let data_s = this.props.getLoved.manga.find(o=> o.id == manga_id)
-        if(data_s != undefined){
-            axios.get(base_uri+'/manga/'+manga_id+'/unlove/'+user_id)
-            .then((res)=>{
-                this.getListSaved()
-            }).catch((err)=>{
-                alert(err)
-            })
+        if(this.state.id != 0){
+            if(data_s != undefined){
+                axios.get(base_uri+'/manga/'+manga_id+'/unlove/'+this.state.id)
+                .then((res)=>{
+                    this.getListSaved()
+                }).catch((err)=>{
+                    alert(err)
+                })
+            }else{
+                axios.get(base_uri+'/manga/'+manga_id+'/love/'+this.state.id)
+                .then((res)=>{
+                    this.getListSaved()
+                }).catch((err)=>{
+                    alert(err)
+                })
+            }
         }else{
-            axios.get(base_uri+'/manga/'+manga_id+'/love/'+user_id)
-            .then((res)=>{
-                this.getListSaved()
-            }).catch((err)=>{
-                alert(err)
-            })
+            alert('kamu harus log in')
         }
     }
 
@@ -187,7 +197,7 @@ class Index extends React.Component{
                         <View style={{flex: 2.4 ,width: '100%', marginRight: 22.27,}}>
                             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
                                 <Text numberOfLines={1} style={{flex: 7,color:'#E0E0E0', marginTop: 5, fontSize: 16, lineHeight: 19,fontWeight: 'bold'}} ellipsizeMode='tail'>{data.title}</Text>
-                                <TouchableHighlight style={{flex: 1, justifyContent: 'flex-end', alignItems: 'center', width: '100%', height: '100%'}} onPress={()=> {this.sendMangaLoved(data.id, 1)}}>
+                                <TouchableHighlight style={{flex: 1, justifyContent: 'flex-end', alignItems: 'center', width: '100%', height: '100%'}} onPress={()=> {this.sendMangaLoved(data.id, this.state.id)}}>
                                     {/* <Icon name='heart' style={{color: '#ffffff', fontSize: 22}}/> */}
                                     <View>{this.getIconLoved(data.id)}</View>
                                 </TouchableHighlight>

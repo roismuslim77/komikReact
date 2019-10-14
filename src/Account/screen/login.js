@@ -6,9 +6,12 @@ import {connect} from 'react-redux'
 import GoogleLogin from '../components/googleAuth'
 import FacebookLogin from '../components/facebookAuth'
 import Account from '../screen/accountScreen'
+import axios from 'axios'
 
 import { authFul, authPending, authRejected} from '../../public/actions/auth'
+import { lovedClear, lovedFul } from '../../public/actions/loved'
 
+const base_api = 'http://apimanga.idmustopha.com/public'
 class Index extends React.Component{
     constructor(props){
         super(props)
@@ -19,6 +22,24 @@ class Index extends React.Component{
     }
     loginApp = async(result)=>{
         if(result.profile){
+            await axios.get(base_api+'/manga/loved/'+result.profile.id)
+            .then((res)=>{
+                var id=[]
+                if(res.data.result.length == 0){
+                    this.props.dispatch(lovedFul(id))
+                }else{
+                    res.data.result.rows.map((data)=>{
+                        id.push(data.manga_id)
+                    })
+                    axios.post(base_api+'/manga/list',{
+                        'id':id
+                    }).then((res)=>{
+                        this.props.dispatch(lovedFul(res.data.result.rows))
+                    }).catch((err)=>{
+                        alert(err)
+                    })
+                }
+            }).catch((err)=>alert('loved'+err))
             await this.props.dispatch(authFul(result.profile))
             this.setState({isLogin: true})
         }else{
@@ -85,6 +106,7 @@ class Index extends React.Component{
                     <FacebookLogin
                         loginStatus={false}
                         onLogin={(result)=>{
+                            this.props.dispatch(lovedClear())
                             this.loginApp(result)
                         }}
                         // onLogout={}

@@ -82,7 +82,7 @@ class Index extends React.Component{
                         <View style={{flex: 1}}>
                             <Image style={{width: 99, height: 139, borderRadius: 10}} source={{uri: data.image}}/>
                         </View>
-                        <View style={{flex: 2.4 ,width: '100%', marginRight: 22.27,}}>
+                        <View style={{flex: 2 ,width: '100%', marginRight: 22.27,}}>
                             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
                                 <Text numberOfLines={1} style={{flex: 7,color:'#E0E0E0', marginTop: 5, fontSize: 16, lineHeight: 19,fontWeight: 'bold'}} ellipsizeMode='tail'>{data.title}</Text>
                                 <TouchableHighlight style={{flex: 1, justifyContent: 'flex-end', alignItems: 'center', width: '100%', height: '100%'}} onPress={()=> alert('click')}>
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
         height: 139
     },
     detail_container:{
-        flex: 2.4,
+        flex: 2,
         width: '100%',
         marginRight: 22.27
     },

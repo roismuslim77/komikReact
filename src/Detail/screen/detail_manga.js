@@ -1,16 +1,19 @@
 import React from 'react'
-import {View, Text, ImageBackground, Image, ScrollView, TouchableOpacity, StyleSheet} from 'react-native'
+import {View, Text, ImageBackground, Image, ScrollView, TouchableOpacity, TouchableHighlight, StyleSheet, ActivityIndicator} from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import {connect} from 'react-redux'
 import axios from 'axios'
 
 import {mangaDetailFul, mangaDetailPending, mangaDetailRejected} from '../../public/actions/mangaDetail'
+import {lovedPending, lovedFul, lovedRejected} from '../../public/actions/loved'
 
 const base_uri = 'http://apimanga.idmustopha.com/public'
 class Index extends React.Component{
     constructor(props){
         super(props)
         this.state={
+            'id': 0,
+            'id_manga': 0,
             'genre':[],
             'title':'',
             'sinopsis':'',
@@ -27,11 +30,79 @@ class Index extends React.Component{
         this.getMangaContent()
     }
 
+    getIconLoved =(id)=>{
+        let data_id = this.props.getLoved.manga.find(o=> o.id == id)
+        if(data_id != undefined){
+            return(
+                <Icon name='heart' style={{color: '#4AAFF7', fontSize: 22}}/>
+            )
+        }
+        return(
+            <Icon name='heart' style={{color: '#ffffff', fontSize: 22}}/>
+        )
+    }
+
+    sendMangaLoved = (manga_id)=>{
+        if(this.state.id != 0){
+            let data_s = this.props.getLoved.manga.find(o=> o.id == manga_id)
+            if(data_s != undefined){
+                axios.get(base_uri+'/manga/'+manga_id+'/unlove/'+this.state.id)
+                .then((res)=>{
+                    this.getListSaved()
+                }).catch((err)=>{
+                    alert(err)
+                })
+            }else{
+                axios.get(base_uri+'/manga/'+manga_id+'/love/'+this.state.id)
+                .then((res)=>{
+                    this.getListSaved()
+                }).catch((err)=>{
+                    alert(err)
+                })
+            }
+        }else{
+            alert('kamu belum login')
+        }
+    }
+
+    getListSaved = ()=>{
+        this.props.dispatch(lovedPending())
+        if(this.state.id != 0){
+            axios.get(base_uri+'/manga/loved/'+this.state.id)
+            .then((res)=>{
+                var id=[]
+                if(res.data.result.length == 0){
+                    this.props.dispatch(lovedFul(id))
+                }else{
+                    res.data.result.rows.map((data,key)=>{
+                        id.push(data.manga_id)
+                    })
+                    axios.post(base_uri+'/manga/list',{
+                        'id': id
+                    }).then((res)=>{
+                        this.props.dispatch(lovedFul(res.data.result.rows))
+                    }).catch((err)=>{
+                        alert(err)
+                    })
+                }
+            }).catch((err)=>{
+                alert(err)
+            })
+        }else {
+            this.props.dispatch(lovedFul(null))
+        }
+    }
+
     getMangaContent = ()=>{
         this.props.dispatch(mangaDetailPending())
         axios.post(base_uri+'/manga/'+this.props.navigation.getParam('id'))
         .then((res)=>{
+            if(this.props.getUser.user.name != undefined) 
             this.setState({
+                id: this.props.getUser.user.id
+            })
+            this.setState({
+                id_manga: res.data.id,
                 genre: res.data.genre,
                 title: res.data.title,
                 sinopsis: res.data.sinopsis,
@@ -42,7 +113,9 @@ class Index extends React.Component{
                 status: res.data.status,
                 komikus: res.data.komikus
             })
+            this.props.dispatch(mangaDetailFul(null))
         }).catch((err)=>{
+            this.props.dispatch(mangaDetailRejected())
             alert(err)
         })
     }
@@ -62,7 +135,7 @@ class Index extends React.Component{
         var elements=[]
         this.state.chapter.map((data, key)=> {
             elements.push(
-                <View style={styles.chapter_contain}>
+                <View key={key} style={styles.chapter_contain}>
                     <TouchableOpacity onPress={()=>{this.props.navigation.navigate('ChapterScreen',{ chapter: data.chapter, id: this.props.navigation.getParam('id')})}} style={{width: '100%'}}>
                         <View>
                             <Text style={styles.chapter_text}>Chapter {data.chapter}</Text>
@@ -82,7 +155,7 @@ class Index extends React.Component{
         var element=[]
         this.state.genre.map((res, key)=>{
             element.push(
-                <TouchableOpacity style={[this.getRandomColor(),styles.category_contain]}>
+                <TouchableOpacity key={key} style={[this.getRandomColor(),styles.category_contain]}>
                      <Text style={styles.category_text}>{res.title}</Text>
                 </TouchableOpacity>
             )
@@ -91,12 +164,18 @@ class Index extends React.Component{
     }
 
     render(){
-        return(
+        return this.props.getMangaDetail.isLoading === true ?
+        <View style={{flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator color="4AAFF7" size="large"/>
+        </View> :
             <View style={styles.container}>
                 <ImageBackground resizeMode='cover' style={styles.image_background} source={{uri: this.state.image}}>
                     <View style={styles.navbar}> 
                         <Icon onPress={()=>{this.props.navigation.pop()}} style={styles.navbar_icon} name="arrow-left"/>
-                        <Icon style={styles.navbar_icon} name="heart"/>
+                        {/* <Icon style={styles.navbar_icon} name="heart"/> */}
+                        <TouchableHighlight onPress={()=> {this.sendMangaLoved(this.state.id_manga)}}>
+                            <View>{this.getIconLoved(this.state.id_manga)}</View>
+                        </TouchableHighlight>
                     </View>
                     <View style={styles.contain}>
                         <View style={styles.image_contain}>
@@ -147,7 +226,6 @@ class Index extends React.Component{
                     </View>
                 </View>
             </View>
-        )
     }
 }
 
@@ -206,7 +284,7 @@ const styles = StyleSheet.create({
     },
     image_background:{
         width: '100%',
-        flex: 1.4
+        flex: 2.3
     },
     navbar:{
         backgroundColor: 'rgba(0,0,0, 0.8)',
@@ -231,12 +309,12 @@ const styles = StyleSheet.create({
         flex: 1
     },
     image:{
-        width: 119,
-        height: 167,
+        width: 105,
+        height: 153,
         borderRadius: 10
     },
     content:{
-        flex: 2,
+        flex: 1.8,
         marginLeft: 7,
         marginTop: 2
     },

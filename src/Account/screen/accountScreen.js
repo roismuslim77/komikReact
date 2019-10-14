@@ -6,7 +6,9 @@ import {connect} from 'react-redux'
 import Faded from '../components/Faded'
 import Facebook from '../components/facebookAuth'
 import LoginScreen from '../screen/login'
+
 import { authClear, authPending } from '../../public/actions/auth'
+import { lovedClear } from '../../public/actions/loved'
 
 class Index extends React.Component{
     constructor(props){
@@ -33,6 +35,7 @@ class Index extends React.Component{
     }
 
     render(){
+        // alert(JSON.stringify(this.props.getUser.user))
         return this.state.isLogin === false ? <LoginScreen/> :
             <View style={{flex: 1}}>
                 <ImageBackground resizeMode='cover' style={styles.image_background} source={{uri: 'https://i0.wp.com/komiku.co/wp-content/uploads/12-Beast.jpg'}}>
@@ -58,6 +61,7 @@ class Index extends React.Component{
                         <Text style={{color: 'grey', fontSize: 12, lineHeight: 25, fontFamily: 'roboto'}}>{this.state.email}</Text>
                         <View style={{height: 25, width: '50%', marginTop: '5%'}}>
                             <Facebook loginStatus={true} onLogout={()=>{
+                                this.props.dispatch(lovedClear())
                                 this.props.dispatch(authClear())
                                 this.setState({isLogin: false})
                             }}/>
