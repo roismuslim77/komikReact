@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import {View,Text,StyleSheet,NativeModules,TouchableHighlight,Image, } from 'react-native';
+import {connect} from 'react-redux'
+
+import {authPending} from '../../public/actions/auth'
 const GoogleUtil = NativeModules.GoogleUtil;
 
-export default class GoogleLoginButton extends Component {
+class GoogleLoginButton extends Component {
     constructor (props) {
         super(props);
     
@@ -24,6 +27,7 @@ export default class GoogleLoginButton extends Component {
       }
     
       login() {
+        this.props.dispatch(authPending())
         GoogleUtil.setup()
         .then(() => {
           GoogleUtil.login(
@@ -58,17 +62,17 @@ export default class GoogleLoginButton extends Component {
         const text = this.state.text;
         return (
           <TouchableHighlight style={{flex: 1, height: 40}} onPress={this.onLogin}  >
-            {(this.state.status == false) ? 
               <Image style={{height: '100%', borderRadius: 4}} source={{uri: 'https://raw.githubusercontent.com/eloew/AuthNative/master/img/btn_google_signin_light_normal_web.png'}}  />
-              : <View style={[styles.button]}>
-              <Image style={{height: '100%', width: '100%'}} source={{uri: 'https://raw.githubusercontent.com/eloew/AuthNative/master/img/btn_google_light_normal_ios.png'}}  />
-                  <Text style={[styles.black]}>{text}</Text>
-                </View>
-              }   
           </TouchableHighlight>
         )
       }
 }
+
+const mapStateToProps = (state)=>{
+  return state.reducer
+}
+
+export default connect(mapStateToProps)(GoogleLoginButton)
 
 const styles = StyleSheet.create({
     button: {

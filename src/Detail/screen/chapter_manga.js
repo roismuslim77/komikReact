@@ -47,8 +47,11 @@ class Index extends React.Component{
             return(
                 <View key={key}>
                     <ReactNativeZoomableView
-                    maxZoom={2}
-                    minZoom={1}
+                    pinchToZoomInSensitivity={1}
+                    pinchToZoomOutSensitivity={1}
+                    movementSensibility={0.5}
+                    maxZoom={1.5}
+                    minZoom={0.5}
                     zoomStep={0.5}
                     initialZoom={1}
                     bindToBorders={true}
@@ -56,7 +59,7 @@ class Index extends React.Component{
                     <Images
                         source={{ uri: String(data.url_image)}} 
                         resizeMode="contain"
-                        indicator={Progress.Circle}
+                        indicator={Progress.Bar}
                         style={styles.image}/>
                     </ReactNativeZoomableView>
                 </View>
@@ -118,7 +121,7 @@ const styles = StyleSheet.create({
     image:{
         height:597,
         flex:1,
-        width: '100%'
+        width: null
     },
     header_auto:{
         opacity: 0.7,

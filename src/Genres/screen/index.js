@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, StyleSheet, Text, ScrollView, TouchableHighlight, Image } from 'react-native'
+import { View, StyleSheet, Text, ScrollView, TouchableHighlight, Image, ActivityIndicator, Modal } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import axios from 'axios'
 import { connect } from 'react-redux'
@@ -11,7 +11,6 @@ import Shimmer from '../../public/shimmer/shimmer'
 import Saved from '../../Saved/screen'
 
 const base_uri ='http://apimanga.idmustopha.com/public'
-
 class Index extends React.Component{
     constructor(props){
         super(props)
@@ -23,6 +22,7 @@ class Index extends React.Component{
             lastPageExp: -1,
             genre:[],
             genre_selected: '',
+            love_loading: false
         }
     }
     componentDidMount(){
@@ -127,17 +127,21 @@ class Index extends React.Component{
         let data_s = this.props.getLoved.manga.find(o=> o.id == manga_id)
         if(this.state.id != 0){
             if(data_s != undefined){
+                this.setState({love_loading: true})
                 axios.get(base_uri+'/manga/'+manga_id+'/unlove/'+this.state.id)
                 .then((res)=>{
                     this.getListSaved()
                 }).catch((err)=>{
+                    this.setState({love_loading: false})
                     alert(err)
                 })
             }else{
+                this.setState({love_loading: true})
                 axios.get(base_uri+'/manga/'+manga_id+'/love/'+this.state.id)
                 .then((res)=>{
                     this.getListSaved()
                 }).catch((err)=>{
+                    this.setState({love_loading: false})
                     alert(err)
                 })
             }
@@ -147,8 +151,10 @@ class Index extends React.Component{
     }
 
     getIconLoved =(id)=>{
-        let data_id = this.props.getLoved.manga.find(o=> o.id == id)
+        let data_id
+        this.props.getLoved.manga ? data_id = this.props.getLoved.manga.find(o=> o.id == id) : data_id = undefined
         if(data_id != undefined){
+            this.state.love_loading ? this.setState({love_loading: false}) : null
             return(
                 <Icon name='heart' style={{color: '#4AAFF7', fontSize: 22}}/>
             )
@@ -167,7 +173,7 @@ class Index extends React.Component{
                         <View style={{flex: 1}}>
                             <Shimmer style={{width: 99, height: 139}}/>
                         </View>
-                        <View style={{flex: 2.4 ,width: '100%', marginRight: 22.27,}}>
+                        <View style={{flex: 2 ,width: '100%', marginRight: 22.27,}}>
                             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
                                 <Shimmer numberOfLines={1} style={{flex: 7,color:'#E0E0E0', marginTop: 5, fontSize: 16, lineHeight: 19,fontWeight: 'bold'}} ellipsizeMode='tail'></Shimmer>
                             </View>
@@ -194,7 +200,7 @@ class Index extends React.Component{
                         <View style={{flex: 1}}>
                             <Image style={{width: 99, height: 139, borderRadius: 10}} source={{uri: data.image}}/>
                         </View>
-                        <View style={{flex: 2.4 ,width: '100%', marginRight: 22.27,}}>
+                        <View style={{flex: 2 ,width: '100%', marginRight: 22.27,}}>
                             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
                                 <Text numberOfLines={1} style={{flex: 7,color:'#E0E0E0', marginTop: 5, fontSize: 16, lineHeight: 19,fontWeight: 'bold'}} ellipsizeMode='tail'>{data.title}</Text>
                                 <TouchableHighlight style={{flex: 1, justifyContent: 'flex-end', alignItems: 'center', width: '100%', height: '100%'}} onPress={()=> {this.sendMangaLoved(data.id, this.state.id)}}>
@@ -248,6 +254,15 @@ class Index extends React.Component{
     render(){
         return(
             <View style={{flex: 1}}>
+                <Modal 
+                    animationType="fade"
+                    transparent={true}
+                    visible={this.state.love_loading}
+                >
+                    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                        <ActivityIndicator color="4AAFF7" size="large"/>
+                    </View> 
+                </Modal>
                 <View style={styles.headerBlack}>
                     <View style={{marginLeft: 20, marginRight: 21,flexDirection: 'row',justifyContent: 'space-between', flex: 1, alignItems: 'center'}}>
                         <View>

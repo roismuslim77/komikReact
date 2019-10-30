@@ -175,7 +175,7 @@ class Index extends PureComponent{
                     <Text style={{color: '#DDDDDD', fontSize: 18, lineHeight: 21, fontWeight: 'bold'}}>Genres</Text>
                     <Text onPress={()=>{this.props.navigation.navigate('GenreScreen')}} style={{color: '#DDDDDD', fontSize: 15, lineHeight: 18}}>Selengkapnya</Text>
                 </View>
-                <View style={{flexDirection: 'row', justifyContent: 'space-between', marginLeft: 18, marginTop: 10, marginBottom: 20, marginRight: 22}}>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', marginLeft: 18, marginTop: 10, marginBottom: 20, marginRight: 12}}>
                     <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} horizontal={true}>
                         {this.state.category.map((data, key)=>{
                             if(key <= 5 ){
@@ -226,7 +226,7 @@ class Index extends PureComponent{
     render(){
         if(this.state.genre_loading) {
             return( 
-                <View style={{flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center'}}>
+                <View style={{flex: 1, backgroundColor: '#181818', justifyContent: 'center', alignItems: 'center'}}>
                     <ActivityIndicator size="large" color="#4AAFF7"/>
                 </View>
             )
@@ -261,9 +261,11 @@ const styles = StyleSheet.create({
     headerBlack:{
         backgroundColor: '#181818',
         flex: 1,
-        paddingBottom: 2
+        paddingBottom: 2,
+        minHeight: 35
     },
     borderSearch:{
+        minHeight: 35,
         flex: 1,
         flexDirection: 'row',
         backgroundColor: 'white',
@@ -278,7 +280,7 @@ const styles = StyleSheet.create({
         shadowColor: '0px 4px 4px rgba(0, 0, 0, 0.25)'
     },
     content:{
-        flex: 6,
+        flex: 10,
         backgroundColor: '#181818',
     },
     contentExplore:{

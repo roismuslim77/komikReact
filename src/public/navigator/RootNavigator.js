@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native'
 import { createAppContainer } from 'react-navigation'
 import { createStackNavigator } from 'react-navigation-stack'
 import { createMaterialBottomTabNavigator } from 'react-navigation-material-bottom-tabs'
-import { Icon } from 'native-base'
+import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import HomeScreen from '../../Home/screen'
 import ExploreScreen from '../../Explore/screen'
@@ -12,13 +12,14 @@ import AccountScreen from '../../Account/screen/login'
 import DetailScreen from '../../Detail/screen/detail_manga'
 import ChapterScreen from '../../Detail/screen/chapter_manga'
 import GenreScreen from '../../Genres/screen'
+import MoreScreen from '../../Home/screen/more_screen'
 
 const BottomNav = createMaterialBottomTabNavigator({
     Home: { 
         screen: HomeScreen,
         navigationOptions: ()=>({
             tabBarIcon: ({ tintColor, focused }) => (
-                <Icon name='home' type='MaterialIcons' style={[styles.IconBar,{color: tintColor}]} />
+                <Icon name='home' style={[styles.IconBar,{color: tintColor}]} />
               ),
         })
     },
@@ -26,7 +27,7 @@ const BottomNav = createMaterialBottomTabNavigator({
         screen: ExploreScreen,
         navigationOptions: ()=>({
             tabBarIcon: ({ tintColor, focused }) => (
-                <Icon name='explore' type='MaterialIcons' style={[styles.IconBar,{color: tintColor}]} />
+                <Icon name='explore' style={[styles.IconBar,{color: tintColor}]} />
               ),
         })
     },
@@ -34,7 +35,7 @@ const BottomNav = createMaterialBottomTabNavigator({
         screen: SavedScreen,
         navigationOptions: ()=>({
             tabBarIcon: ({ tintColor, focused }) => (
-                <Icon name='book' type='MaterialIcons' style={[styles.IconBar,{color: tintColor}]} />
+                <Icon name='book' style={[styles.IconBar,{color: tintColor}]} />
               ),
         })
     },
@@ -42,7 +43,7 @@ const BottomNav = createMaterialBottomTabNavigator({
         screen: AccountScreen,
         navigationOptions: ()=>({
             tabBarIcon: ({ tintColor, focused }) => (
-                <Icon name='person' type='Ionicons' style={[styles.IconBar,{color: tintColor}]} />
+                <Icon name='person' style={[styles.IconBar,{color: tintColor}]} />
               ),
         })
     }
@@ -54,7 +55,7 @@ const BottomNav = createMaterialBottomTabNavigator({
     barStyle: {
         backgroundColor: '#181818',
     },
-    initialRouteName: 'Saved'
+    initialRouteName: 'Home'
 })
 
 const RootNav = createStackNavigator({
@@ -67,6 +68,9 @@ const RootNav = createStackNavigator({
     },
     GenreScreen: {
         screen: GenreScreen
+    },
+    MoreScreen: {
+        screen: MoreScreen
     }
 },{
     initialRouteName: 'HomeRoot',

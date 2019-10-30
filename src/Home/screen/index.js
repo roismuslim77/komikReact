@@ -1,17 +1,17 @@
 import React from 'react';
-import {Text, StyleSheet, View, Image, Dimensions, ScrollView, TouchableOpacity, ActivityIndicator, Animated } from 'react-native'
-import {Content, Header, Container, Body, Right, Icon} from 'native-base'
+import {Text, StyleSheet, View, Image, Dimensions, ScrollView } from 'react-native'
 import Carousel, { Pagination, ParallaxImage } from 'react-native-snap-carousel'
+import Icon from 'react-native-vector-icons/FontAwesome'
 import { connect } from 'react-redux'
 import axios from 'axios'
 
-import { getAnimeFul, getAnimePending, getAnimeRejected } from '../../public/actions/anime'
 import Shimmer from '../../public/shimmer/shimmer'
 import RecentCardLs from '../components/recentCardList'
 import TopCardLs from '../components/topCardList'
 
 const { width: screenWidth } = Dimensions.get('window')
 
+const base_api = 'http://apimanga.idmustopha.com/public'
 class Index extends React.Component{
     constructor(props){
         super(props)
@@ -19,77 +19,32 @@ class Index extends React.Component{
             position: 0,
             interval: null,
             sliderActiveSlide: 0,
-            test: [],
-            hasMoreTop: true,
-            hasMoreRecent: true,
             error: null,
-            loading: false,
-            current_page_top: 1,
-            current_page_recent: 1,
-            lastPageRecent: -1,
-            dataTop: [],
-            dataRecent: [],
-            dataSource: [
-                {
-                    title: 'Anime 1',
-                    caption: 'Caption 1',
-                    url: 'https://i.redd.it/blj6tyqfn9c11.png'
-                },
-                {
-                    title: 'Anime 1',
-                    caption: 'Caption 1',
-                    url: 'https://www.liveabout.com/thmb/gsUtdOaYQ5FNmNMG6zhIHCVcDGk=/2140x1516/filters:no_upscale():max_bytes(150000):strip_icc()/Naruto-Movie2-USA-56a014415f9b58eba4aed4cc.jpg'
-                },
-                {
-                    title: 'Anime 2',
-                    caption: 'Caption 2',
-                    url: 'https://asset.kompas.com/crops/7U6sF_H36w2cNFSyuRIpL_9WVHk=/0x38:918x650/750x500/data/photo/2019/08/06/5d49760f7ce85.png'
-                }
-            ]
+            loading: true,
+            dataSource: []
         }
     }
 
     componentDidMount(){
-        this.getListTop()
-        // axios.get('https://api.jikan.moe/v3/search/manga/?status=upcoming&page=1&limit=5')
-        // .then((res)=>{
-        //     this.props.dispatch(getAnimeLs(res.data.results))
-        // })
-        // alert('mount '+ JSON.stringify(this.props.getAnime.anime))
+        this.getListCarousel()
     }
 
-    getListTop = ()=>{
-        if(this.state.loading) { return; }
-        this.setState({loading: true})
-        axios.get('https://api.jikan.moe/v3/search/anime/?q=null&status=publishing&page='+this.state.current_page_top+'&limit=10')
+    getListCarousel = async() =>{
+        await axios.post(base_api+'/manga/list?limit=9&category=Random&page=1')
         .then((res)=>{
-            this.setState({
-                hasMore: (this.state.current_page_top <= res.data.last_page),
-                dataTop: [...this.state.dataTop,...res.data.results],
-                loading: false,
-                current_page_top: this.state.current_page_top + 1
+            res.data.result.rows.map((data, key)=>{
+                this.setState({
+                    dataSource: [...this.state.dataSource, {
+                        'title': data.title,
+                        'caption':data.title,
+                        'url':data.image
+                    }], 
+                    loading: false
+                })
             })
-        }).catch((err)=>{this.setState({ error, loading: false})})
-    }
-
-    isCloseToBottomTop = ({layoutMeasurement, contentOffset, contentSize}) => {
-        const paddingToBottom = 20;
-        return layoutMeasurement.width + contentOffset.x >=
-          contentSize.width - paddingToBottom;
-    }
-
-    renderListMangaTop = () =>{
-        return (this.state.dataTop.map((data, key)=>{
-            return(
-                <TouchableOpacity style={{width: 99, marginTop: 9, marginRight: 9}} key={data.mal_id}>
-                    <Image style={{width: 99, height: 139, borderRadius: 10}} source={{uri: data.image_url}}/>
-                    <View style={{height: 35, marginBottom: 4}}>
-                        <Text numberOfLines={2} style={{color:'white', marginTop: 7, fontSize: 13}}>{data.title}</Text>
-                    </View>
-                    <Text numberOfLines={1} style={{color:'#4AAFF7', marginTop: 4, fontSize: 12, fontWeight: 'bold'}}>Chapter {data.chapters}</Text>
-                </TouchableOpacity>
-            )
-        }))
+        }).catch((err)=>{
+            alert(err.response)
+        })
     }
 
     _renderItem ({item, index}, parallaxProps) {
@@ -137,72 +92,60 @@ class Index extends React.Component{
         )
     }
 
+    more_click = (data) =>{
+        this.props.navigation.navigate('MoreScreen',{header: data})
+    }
+
     render(){
         return(
             // alert(JSON.stringify(this.state.test))
-            <Container>
-                <Header style={styles.headerBlack}>
-                    <Body style={{marginLeft: 20, marginTop: 25}}><Text style={[styles.textWhite, {fontSize: 20}]}>Home Page</Text></Body>
-                    <Right style={{flex: 1, justifyContent: 'flex-end', marginTop: 20}}>
+            <View>
+                <View style={styles.headerBlack}>
+                    <View style={{flex: 5, marginLeft: 20, marginTop: 25}}><Text style={[styles.textWhite, {fontSize: 20}]}>Home Page</Text></View>
+                    <View style={{flex: 1, justifyContent: 'flex-end', marginTop: 20}}>
                         <View style={styles.btnSearch}>
                             <Icon name='search' type='MaterialIcons' style={[styles.iconSearch]}/>
                         </View>
-                    </Right>
-                </Header>
-                <Content style={styles.contentBlack}>
+                    </View>
+                </View>
+                <View style={styles.contentBlack}>
                 <ScrollView>
-                    <Carousel
-                        sliderWidth={screenWidth}
-                        sliderHeight={200}
-                        itemWidth={screenWidth}
-                        itemHeight={200}
-                        data={this.state.dataSource}//this.state.dataSource}
-                        renderItem={this._renderItem}
-                        hasParallaxImages={true}
-                        onSnapToItem={(index) => this.setState({ sliderActiveSlide: index }) }
-                    />
+                    {this.state.loading ? 
+                        <Shimmer style={{height: 200, width: '100%', marginBottom: 80}} autoRun={true} visible={false}></Shimmer> 
+                        :
+                        <Carousel
+                            sliderWidth={screenWidth}
+                            sliderHeight={200}
+                            itemWidth={screenWidth}
+                            itemHeight={200}
+                            data={this.state.dataSource}//this.state.dataSource}
+                            renderItem={this._renderItem}
+                            hasParallaxImages={true}
+                            onSnapToItem={(index) => this.setState({ sliderActiveSlide: index }) }
+                        /> 
+                    }
                     {this.pagination}
                     <View style={{marginTop: -15, marginBottom: 16}}>
                         <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
                             <View style={{backgroundColor: '#FE2742', width: 101, height: 36, borderTopRightRadius: 30, borderBottomRightRadius: 30, justifyContent: 'center', alignItems: 'center'}}><Text style={{fontSize: 16, color: 'white', fontFamily: 'Roboto', fontWeight: 'bold'}}>Top Manga</Text></View>
-                            <Text style={{fontSize: 14, color: 'white', fontFamily: 'Roboto', marginRight: 19}}>Selengkapnya</Text>
+                            <Text onPress={()=>this.more_click('top')} style={{fontSize: 14, color: 'white', fontFamily: 'Roboto', marginRight: 19}}>Selengkapnya</Text>
                         </View>
                         <View style={{marginLeft: 11}}>
-                            {/* <ScrollView horizontal={true}
-                                showsHorizontalScrollIndicator={false}
-                                onScroll={({nativeEvent}) => {
-                                    if(this.isCloseToBottomTop(nativeEvent) && this.state.hasMoreTop){
-                                        this.getListTop()
-                                    }
-                                }}
-                                // onMomentumScrollEnd={()=>alert('test')}
-                            >
-                                {this.renderListMangaTop()}
-                            </ScrollView> */}
-                            <TopCardLs/>
+                            <TopCardLs navigation={this.props.navigation}/>
                         </View>
                     </View>
                     <View style={{marginBottom: 26}}>
                         <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
                             <View style={{backgroundColor: '#FE2742', width: 130, height: 36, borderTopRightRadius: 30, borderBottomRightRadius: 30, justifyContent: 'center', alignItems: 'center'}}><Text style={{fontSize: 16, color: 'white', fontFamily: 'Roboto', fontWeight: 'bold'}}>Recent Manga</Text></View>
-                            <Text style={{fontSize: 14, color: 'white', fontFamily: 'Roboto', marginRight: 19}}>Selengkapnya</Text>
+                            <Text onPress={()=>this.more_click('recent')} style={{fontSize: 14, color: 'white', fontFamily: 'Roboto', marginRight: 19}}>Selengkapnya</Text>
                         </View>
                         <View style={{marginLeft: 11}}>
-                            <RecentCardLs/>
-                        </View>
-                    </View>
-                    <View style={{marginBottom: 26}}>
-                        <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                            <View style={{backgroundColor: '#FE2742', width: 130, height: 36, borderTopRightRadius: 30, borderBottomRightRadius: 30, justifyContent: 'center', alignItems: 'center'}}><Text style={{fontSize: 16, color: 'white', fontFamily: 'Roboto', fontWeight: 'bold'}}>Favorite Manga</Text></View>
-                            <Text style={{fontSize: 14, color: 'white', fontFamily: 'Roboto', marginRight: 19}}>Selengkapnya</Text>
-                        </View>
-                        <View style={{marginLeft: 11}}>
-                            <RecentCardLs/>
+                            <RecentCardLs navigation={this.props.navigation}/>
                         </View>
                     </View>
                 </ScrollView>
-                </Content>
-            </Container>
+                </View>
+            </View>
         )
     }
 }
@@ -220,7 +163,8 @@ const styles = StyleSheet.create({
     headerBlack:{
         backgroundColor: '#181818',
         height: 64,
-        paddingBottom: 15
+        paddingBottom: 15,
+        flexDirection: 'row'
     },
     textWhite:{
         color: '#C7C7C7',
@@ -230,6 +174,7 @@ const styles = StyleSheet.create({
     },
     contentBlack:{
         backgroundColor: '#181818',
+        paddingBottom: '11%'
     },
     btnSearch: {
         backgroundColor: '#4AAFF7',

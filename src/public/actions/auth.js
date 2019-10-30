@@ -1,6 +1,7 @@
-export const authFul = (data) => ({
+export const authFul = (data, value) => ({
     type: "AUTH_FULFILLED",
-    payload: data
+    payload: data,
+    from: value
 })
 
 export const authPending = () => ({

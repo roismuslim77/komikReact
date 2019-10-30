@@ -4,7 +4,7 @@ const FacebookUtil = NativeModules.FacebookUtil;
 import Icon from 'react-native-vector-icons/FontAwesome'
 import {connect} from 'react-redux'
 
-import {authPending} from '../../public/actions/auth'
+import {authPending, authRejected} from '../../public/actions/auth'
 
 const globals = {
   login: 'Sign in with Facebook',
@@ -72,6 +72,7 @@ class LoginButton extends Component {
         // AsyncStorage.setItem('name', result.profile.name)
         // AsyncStorage.setItem('email', result.profile.email)
       } catch (err) {
+        this.props.dispatch(authRejected())
         console.error(err);
       }
     }

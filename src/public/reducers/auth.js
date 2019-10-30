@@ -1,5 +1,6 @@
 const initialState = {
     user: [],
+    from: '',
     isLoading: false,
     isFinish: false,
     isError: false 
@@ -18,7 +19,8 @@ const auth = (state= initialState, action) =>{
                 isError: false,
                 isFinish: true,
                 isLoading: false,
-                user: action.payload
+                user: action.payload,
+                from: action.from
             }
         case "AUTH_CLEAR":
             return {

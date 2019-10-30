@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import { connect } from 'react-redux'
 import axios from 'axios'
 
+import { lovedPending, lovedFul, lovedRejected } from '../../public/actions/loved'
 import { getMangaSearchFul, getMangaSearchPending, getMangaSearchRejected } from '../../public/actions/mangaSearch'
 import Shimmer from '../../public/shimmer/shimmer'
 
@@ -21,6 +22,46 @@ class Index extends React.Component{
 
     componentDidMount(){
         this.getListSearch()
+    }
+
+    getIconLoved = (id) =>{
+        let data_id
+        this.props.getLoved.manga ? data_id = this.props.getLoved.manga.find(o=> o.id == id) : data_id = undefined
+        if(data_id != undefined){
+            return(
+                <Icon name='heart' style={{color:'#4AAFF7', fontSize: 22}}/>
+            )
+        }
+        return(
+            <Icon name='heart' style={{color:'#ffffff', fontSize: 22}}/>
+        )
+    }
+
+    sendMangaLoved = (manga_id) => {
+        let data_s = '';
+        if(this.state.id != 0){
+            this.setState({modal_loading: true})
+            this.props.getLoved.manga ? data_s = this.props.getLoved.manga.find(o=> o.id == manga_id) : data_s = undefined
+            if(data_s != undefined){
+                axios.get(base_uri+'/manga/'+manga_id+'/unlove/'+this.state.id)
+                .then((res)=>{
+                    this.getListSaved()
+                }).catch((err)=>{
+                    this.setState({modal_loading: false})
+                    alert(err)
+                })
+            }else{
+                axios.get(base_uri+'/manga/'+manga_id+'/love/'+this.state.id)
+                .then((res)=>{
+                    this.getListSaved()
+                }).catch((err)=>{
+                    this.setState({modal_loading: false})
+                    alert(err)
+                })
+            }
+        }else{
+            alert('kamu belum login')
+        }
     }
 
     getListSearch = ()=>{
@@ -78,7 +119,7 @@ class Index extends React.Component{
         }else{
             return (this.props.getMangaSearch.manga.map((data, key)=>{
                 return(
-                    <View style={{flexDirection: 'row',width: '100%', marginTop: 9, marginRight: 9, marginBottom: 20}}>
+                    <View key={key} style={{flexDirection: 'row',width: '100%', marginTop: 9, marginRight: 9, marginBottom: 20}}>
                         <View style={{flex: 1}}>
                             <Image style={{width: 99, height: 139, borderRadius: 10}} source={{uri: data.image}}/>
                         </View>
@@ -86,7 +127,7 @@ class Index extends React.Component{
                             <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
                                 <Text numberOfLines={1} style={{flex: 7,color:'#E0E0E0', marginTop: 5, fontSize: 16, lineHeight: 19,fontWeight: 'bold'}} ellipsizeMode='tail'>{data.title}</Text>
                                 <TouchableHighlight style={{flex: 1, justifyContent: 'flex-end', alignItems: 'center', width: '100%', height: '100%'}} onPress={()=> alert('click')}>
-                                    <Icon name='heart' style={{color: '#4AAFF7', fontSize: 22}}/>
+                                    <View>{this.getIconLoved(data.id)}</View>
                                 </TouchableHighlight>
                             </View>
                             <View style={{flex: 1}}>

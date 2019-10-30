@@ -1,9 +1,10 @@
 import React from 'react'
-import {View, Text, ImageBackground, Image, ScrollView, TouchableOpacity, TouchableHighlight, StyleSheet, ActivityIndicator} from 'react-native'
+import {Modal, View, Text, ImageBackground, Image, ScrollView, TouchableOpacity, TouchableHighlight, StyleSheet, ActivityIndicator} from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import {connect} from 'react-redux'
 import axios from 'axios'
 
+import Shimmer from '../../public/shimmer/shimmer'
 import {mangaDetailFul, mangaDetailPending, mangaDetailRejected} from '../../public/actions/mangaDetail'
 import {lovedPending, lovedFul, lovedRejected} from '../../public/actions/loved'
 
@@ -12,17 +13,18 @@ class Index extends React.Component{
     constructor(props){
         super(props)
         this.state={
-            'id': 0,
-            'id_manga': 0,
-            'genre':[],
-            'title':'',
-            'sinopsis':'',
-            'image':null,
-            'chapter':[],
-            'last_chapter':'',
-            'rating':'',
-            'status':'',
-            'komikus':''
+            id: 0,
+            id_manga: 0,
+            genre:[],
+            title:'',
+            sinopsis:'',
+            image:null,
+            chapter:[],
+            last_chapter:'',
+            rating:'',
+            status:'',
+            komikus:'',
+            modal_loading: false,
         }
     }
 
@@ -31,25 +33,31 @@ class Index extends React.Component{
     }
 
     getIconLoved =(id)=>{
-        let data_id = this.props.getLoved.manga.find(o=> o.id == id)
+        let data_id
+        this.props.getLoved.manga ? data_id = this.props.getLoved.manga.find(o=> o.id == id) : data_id = undefined
         if(data_id != undefined){
+            this.state.modal_loading ? this.setState({modal_loading: false}) : null
             return(
-                <Icon name='heart' style={{color: '#4AAFF7', fontSize: 22}}/>
+                <Icon name='heart' style={{color:'#4AAFF7', fontSize: 22}}/>
+            )
+        }else{
+            return(
+                <Icon name='heart' style={{color: '#ffffff', fontSize: 22}}/>
             )
         }
-        return(
-            <Icon name='heart' style={{color: '#ffffff', fontSize: 22}}/>
-        )
     }
 
     sendMangaLoved = (manga_id)=>{
+        let data_s = '';
         if(this.state.id != 0){
-            let data_s = this.props.getLoved.manga.find(o=> o.id == manga_id)
+            this.setState({modal_loading: true})
+            this.props.getLoved.manga ? data_s = this.props.getLoved.manga.find(o=> o.id == manga_id) : data_s = undefined
             if(data_s != undefined){
                 axios.get(base_uri+'/manga/'+manga_id+'/unlove/'+this.state.id)
                 .then((res)=>{
                     this.getListSaved()
                 }).catch((err)=>{
+                    this.setState({modal_loading: false})
                     alert(err)
                 })
             }else{
@@ -57,10 +65,12 @@ class Index extends React.Component{
                 .then((res)=>{
                     this.getListSaved()
                 }).catch((err)=>{
+                    this.setState({modal_loading: false})
                     alert(err)
                 })
             }
         }else{
+            this.setState({modal_loading: false})
             alert('kamu belum login')
         }
     }
@@ -89,7 +99,7 @@ class Index extends React.Component{
                 alert(err)
             })
         }else {
-            this.props.dispatch(lovedFul(null))
+            this.props.dispatch(lovedRejected())
         }
     }
 
@@ -99,7 +109,7 @@ class Index extends React.Component{
         .then((res)=>{
             if(this.props.getUser.user.name != undefined) 
             this.setState({
-                id: this.props.getUser.user.id
+                id: typeof this.props.getUser.user.id == 'string' ? parseInt(this.props.getUser.user.id) : this.props.getUser.user.id
             })
             this.setState({
                 id_manga: res.data.id,
@@ -164,11 +174,17 @@ class Index extends React.Component{
     }
 
     render(){
-        return this.props.getMangaDetail.isLoading === true ?
-        <View style={{flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center'}}>
-            <ActivityIndicator color="4AAFF7" size="large"/>
-        </View> :
+        return (
             <View style={styles.container}>
+                <Modal 
+                    animationType="fade"
+                    transparent={true}
+                    visible={this.state.modal_loading}
+                >
+                    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                        <ActivityIndicator color="4AAFF7" size="large"/>
+                    </View> 
+                </Modal>
                 <ImageBackground resizeMode='cover' style={styles.image_background} source={{uri: this.state.image}}>
                     <View style={styles.navbar}> 
                         <Icon onPress={()=>{this.props.navigation.pop()}} style={styles.navbar_icon} name="arrow-left"/>
@@ -179,53 +195,77 @@ class Index extends React.Component{
                     </View>
                     <View style={styles.contain}>
                         <View style={styles.image_contain}>
-                            <Image style={styles.image} source={{uri: this.state.image}}/>
+                            {this.props.getMangaDetail.isLoading === true ? <Shimmer borderRadiusContainer={10} visible={false} autoRun={true} style={styles.image}/> : 
+                                <Image style={[styles.image, {borderRadius: 10}]} source={{uri: this.state.image}}/>
+                            }
                         </View>
                         <View style={styles.content}>
-                            <Text style={styles.content_title}>{this.state.title}</Text>
-                            <Text style={styles.content_subtitle}>{this.state.komikus}</Text>
-                            <View style={styles.contain_icons}>
-                                <View style={styles.contain_icons_content}>
-                                    <Icon name='eye' style={styles.content_icon}/>
-                                    <Text style={styles.content_text}>12K</Text>
+                            {this.props.getMangaDetail.isLoading === true ? <Shimmer style={styles.content_title} autoRun={true} visible={false}/> : 
+                                <Text style={styles.content_title}>{this.state.title}</Text>}
+                            {this.props.getMangaDetail.isLoading === true ? <Shimmer style={styles.content_subtitle} autoRun={true} visible={false}/> : 
+                                <Text style={styles.content_subtitle}>{this.state.komikus}</Text>
+                            }
+                            {this.props.getMangaDetail.isLoading === true ?
+                                <Shimmer style={styles.content_icons} autoRun={true} visible={!this.props.getMangaDetail.isLoading}/> :
+                                <View style={styles.contain_icons}>
+                                    <View style={styles.contain_icons_content}>
+                                        <Icon name='eye' style={styles.content_icon}/>
+                                        <Text style={styles.content_text}>12K</Text>
+                                    </View>
+                                    <View style={styles.contain_icons_content}>
+                                        <Icon name='heart' style={styles.content_icon}/>
+                                        <Text style={styles.content_text}>1.3K</Text>
+                                    </View>
+                                    <View style={styles.contain_icons_content}>
+                                        <Icon name='star' style={styles.content_icon}/>
+                                        <Text style={styles.content_text}>{this.state.rating}</Text>
+                                    </View>
                                 </View>
-                                <View style={styles.contain_icons_content}>
-                                    <Icon name='heart' style={styles.content_icon}/>
-                                    <Text style={styles.content_text}>1.3K</Text>
-                                </View>
-                                <View style={styles.contain_icons_content}>
-                                    <Icon name='star' style={styles.content_icon}/>
-                                    <Text style={styles.content_text}>{this.state.rating}</Text>
-                                </View>
+                            }
+                            <View>
+                                {this.props.getMangaDetail.isLoading === true ? <Shimmer borderRadiusContainer={10} visible={false} autoRun={true} style={styles.content_text_white}/> : 
+                                    <Text style={styles.content_text_white}>300 Comments</Text>
+                                }
                             </View>
-                            <View><Text style={styles.content_text_white}>300 Comments</Text></View>
                         </View>
                     </View>
-                    <View style={styles.content_detail}>
-                        <Text style={styles.sinopsis_title}>Sinopsis</Text>
-                        <Text numberOfLines={5} style={styles.sinopsis}>{this.state.sinopsis}</Text>
-                        <View style={styles.category_container}>
-                            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>{this.getCategoryItem()}</ScrollView>
+                    {this.props.getMangaDetail.isLoading === true ? 
+                        <View style={[styles.content_detail,{width: '100%', height: '100%'}]}>
+                            <Shimmer borderRadiusContainer={10} visible={false} autoRun={true} style={[styles.sinopsis_title, {width: '100%'}]}/>
+                            <Shimmer borderRadiusContainer={10} visible={false} autoRun={true} style={[styles.sinopsis,{height: 70, width: '100%'}]}/>
+                            <Shimmer borderRadiusContainer={10} visible={false} autoRun={true} style={[styles.category_container,{height: 34, width: '100%'}]}/>
+                        </View>:
+                        <View style={styles.content_detail}>
+                            <Text style={styles.sinopsis_title}>Sinopsis</Text>
+                            <Text numberOfLines={5} style={styles.sinopsis}>{this.state.sinopsis}</Text>
+                            <View style={styles.category_container}>
+                                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>{this.getCategoryItem()}</ScrollView>
+                            </View>
                         </View>
-                    </View>
+                    }
                 </ImageBackground>
                 <View style={{flex: 1}}>
                     <View style={styles.chapter_line_top}></View>
                         <View style={styles.chapter_header_container}>
-                            <Text style={styles.chapter_header_left}>Chapter {this.state.last_chapter}</Text>
+                            {this.props.getMangaDetail.isLoading === true ?
+                                <Shimmer style={styles.chapter_header_left} autoRun={true} visible={!this.props.getMangaDetail.isLoading}/> :
+                                <Text style={styles.chapter_header_left}>Chapter {this.state.last_chapter}</Text>
+                            }
                             <View style={styles.chapter_header_right}>
-                                <Text style={styles.chapter_header_right_text}>sort</Text>
-                                <Icon style={styles.chapter_header_right_icon} name='sort'/>
                             </View>
                         </View>
                     <View style={styles.chapter_line_bottom}></View>
                     <View style={styles.chapter_container}>
-                        <ScrollView style={styles.chapter_scrollview}>
-                            {this.getChapterItem()}
-                        </ScrollView>
+                        { this.props.getMangaDetail.isLoading === true ?
+                            <Shimmer style={{width: '100%',height: '100%'}} autoRun={true} visible={!this.props.getMangaDetail.isLoading}/> :
+                            <ScrollView style={styles.chapter_scrollview}>
+                                {this.getChapterItem()}
+                            </ScrollView>
+                        }
                     </View>
                 </View>
             </View>
+        )
     }
 }
 
@@ -310,8 +350,7 @@ const styles = StyleSheet.create({
     },
     image:{
         width: 105,
-        height: 153,
-        borderRadius: 10
+        height: 153
     },
     content:{
         flex: 1.8,

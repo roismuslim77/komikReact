@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, ImageBackground, Image, ScrollView, TouchableHighlight } from 'react-native'
+import { View, Text, StyleSheet, ImageBackground, Image, ScrollView, TouchableHighlight, NativeModules } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import {connect} from 'react-redux'
 
@@ -10,6 +10,7 @@ import LoginScreen from '../screen/login'
 import { authClear, authPending } from '../../public/actions/auth'
 import { lovedClear } from '../../public/actions/loved'
 
+const GoogleUtil = NativeModules.GoogleUtil;
 class Index extends React.Component{
     constructor(props){
         super(props)
@@ -22,11 +23,10 @@ class Index extends React.Component{
     }
 
     componentDidMount(){
-        // alert(JSON.stringify(this.props.getUser.user.name))
         if(this.props.getUser.user.name != undefined) 
         this.setState({
             isLogin: true,
-            image: this.props.getUser.user.picture.data.url,
+            image: this.props.getUser.from == 'fb' ? this.props.getUser.user.picture.data.url : this.props.getUser.from == 'google' ? this.props.getUser.user.photo : this.props.getUser.user.picture,
             name: this.props.getUser.user.name,
             email: this.props.getUser.user.email
         })
@@ -34,8 +34,41 @@ class Index extends React.Component{
         this.setState({isLogin: false})
     }
 
+    _logoutGoogle = () =>{
+        GoogleUtil.logout((err, data) => {
+            this.setState({isLogin: false})
+          })
+    }
+
+    logoutButton = ()=>{
+        return this.props.getUser.from == 'fb' ? 
+        <Facebook loginStatus={true} onLogout={()=>{
+            this.props.dispatch(lovedClear())
+            this.props.dispatch(authClear())
+            this.setState({isLogin: false})
+        }}/> : this.props.getUser.from == 'google' ?
+        <TouchableHighlight onPress={()=>{
+            this.props.dispatch(lovedClear())
+            this.props.dispatch(authClear())
+            this._logoutGoogle()
+        }}>
+            <View style={styles.btnGoogle}>
+                <Image style={{height: '100%', width: '30%'}} source={{uri: 'https://raw.githubusercontent.com/eloew/AuthNative/master/img/btn_google_light_normal_ios.png'}}/>
+                <Text style={{color: '#000001', fontWeight: 'bold'}}>LOGOUT</Text>
+            </View>
+        </TouchableHighlight> : 
+        <TouchableHighlight onPress={()=>{
+            this.props.dispatch(lovedClear())
+            this.props.dispatch(authClear())
+            this.setState({isLogin: false})
+        }}>
+            <View style={styles.button}>
+                <Text style={{color: '#ffffff', fontWeight: 'bold'}}>LOGOUT</Text>
+            </View>
+        </TouchableHighlight>
+    }
+
     render(){
-        // alert(JSON.stringify(this.props.getUser.user))
         return this.state.isLogin === false ? <LoginScreen/> :
             <View style={{flex: 1}}>
                 <ImageBackground resizeMode='cover' style={styles.image_background} source={{uri: 'https://i0.wp.com/komiku.co/wp-content/uploads/12-Beast.jpg'}}>
@@ -60,14 +93,10 @@ class Index extends React.Component{
                         <Text style={{color: 'white', fontWeight: 'bold', fontSize: 20, lineHeight: 25, fontFamily: 'roboto'}}>{this.state.name}</Text>
                         <Text style={{color: 'grey', fontSize: 12, lineHeight: 25, fontFamily: 'roboto'}}>{this.state.email}</Text>
                         <View style={{height: 25, width: '50%', marginTop: '5%'}}>
-                            <Facebook loginStatus={true} onLogout={()=>{
-                                this.props.dispatch(lovedClear())
-                                this.props.dispatch(authClear())
-                                this.setState({isLogin: false})
-                            }}/>
+                            {this.logoutButton()}
                         </View>
                     </View>
-                    <View style={{backgroundColor: 'rgba(255,255,255,0.1)', height: 5, marginLeft: 50, marginTop: 35, marginBottom: 10}}/>
+                    <View style={{backgroundColor: 'rgba(255,255,255,0.1)', height: 5, marginLeft: 50, marginTop: 25, marginBottom: 10}}/>
                     <View style={{flexDirection: 'row', marginLeft: 55, justifyContent: 'space-between', alignItems: 'center'}}>
                         <View style={{justifyContent: 'center'}}>
                             <Text style={{color: 'white', fontSize: 35}}>23</Text>
@@ -81,7 +110,7 @@ class Index extends React.Component{
                             <Text style={{color: 'white', fontSize: 16, marginLeft: 23}}>Donate</Text>
                         </View>
                     </View>
-                    <Text style={{color: 'grey', marginLeft: 50, marginTop: 30}}>RECENT VIEWS</Text>
+                    <Text style={{color: 'grey', marginLeft: 50, marginTop: 15}}>RECENT VIEWS</Text>
                     <View style={{backgroundColor: 'rgba(255,255,255,0.1)', height: 5, marginTop: 7, marginLeft: 50, marginBottom: 10}}/>
                     <View style={{marginLeft: 50}}>
                         <ScrollView horizontal={true}>
@@ -100,14 +129,31 @@ class Index extends React.Component{
 }
 
 const styles = StyleSheet.create({
+    button: {
+        padding: 10,
+        alignItems: 'center',
+        height: '100%',
+        backgroundColor: '#3B5998',
+        flexDirection: 'row', 
+        borderRadius: 3,
+        justifyContent: 'center'
+    },
+    btnGoogle: {
+        padding: 10,
+        alignItems: 'center',
+        height: '100%',
+        backgroundColor: '#ffffff',
+        flexDirection: 'row', 
+        borderRadius: 3,
+        justifyContent: 'flex-start'
+    },
     headerBlack:{
         backgroundColor: 'rgba(0,0,0,0.6)',
         flex: 1,
     },
     content:{
-        flex: 2,
+        flex: 1.9,
         backgroundColor: '#181818',
-        marginTop: -2
     },
     image_background:{
         flex: 1.1,

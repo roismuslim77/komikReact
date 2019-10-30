@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, TouchableOpacity} from 'react-native'
-import { Icon } from 'native-base'
+import Icon from 'react-native-vector-icons/FontAwesome'
 import { connect } from 'react-redux'
 
 import Shimmer from '../../public/shimmer/shimmer'
